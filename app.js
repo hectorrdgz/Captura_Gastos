@@ -110,7 +110,9 @@ async function exportRows(rows, filename, statusEl) {
 
   if (navigator.canShare && navigator.canShare({ files: [file] })) {
     try {
-      await navigator.share({ files: [file], title: filename, text: "Gastos capturados" });
+      // OJO: no agregar "text" aquí. Al compartir files+text juntos, WhatsApp
+      // se queda solo con el texto y descarta el archivo (bug reproducido).
+      await navigator.share({ files: [file] });
       await markExportados(rows.map((r) => r.id));
       statusEl.textContent = `Compartido: ${filename} (${rows.length} movimientos).`;
       return;
@@ -135,11 +137,11 @@ async function exportRows(rows, filename, statusEl) {
   statusEl.textContent = `Descargado: ${filename} (${rows.length} movimientos).`;
 }
 
-function render(rows, listEl, totalEl, fecha) {
+function render(rows, listEl, totalEl, fecha, cuenta) {
   listEl.innerHTML = "";
   let total = 0;
   const filtered = rows
-    .filter((r) => r.fecha === fecha)
+    .filter((r) => r.fecha === fecha && r.cuenta === cuenta)
     .sort((a, b) => b.id - a.id);
 
   for (const r of filtered) {
@@ -180,13 +182,20 @@ let cachedRows = [];
 async function refresh() {
   cachedRows = await getAll();
   const fecha = document.getElementById("filtro-fecha").value || todayISO();
-  render(cachedRows, document.getElementById("lista"), document.getElementById("total"), fecha);
+  const cuenta = document.getElementById("filtro-cuenta").value;
+  render(cachedRows, document.getElementById("lista"), document.getElementById("total"), fecha, cuenta);
+}
+
+function slug(s) {
+  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
 window.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("form-captura");
   const fechaInput = document.getElementById("fecha");
+  const cuentaInput = document.getElementById("cuenta");
   const filtroFecha = document.getElementById("filtro-fecha");
+  const filtroCuenta = document.getElementById("filtro-cuenta");
   const statusEl = document.getElementById("status");
 
   fechaInput.value = todayISO();
@@ -201,9 +210,10 @@ window.addEventListener("DOMContentLoaded", () => {
     }
     const data = {
       fecha: fechaInput.value || todayISO(),
+      cuenta: cuentaInput.value,
       tipo: document.querySelector('input[name="tipo"]:checked').value,
       monto,
-      categoria: document.getElementById("categoria").value.trim(),
+      categoria: document.getElementById("categoria").value,
       comercio: document.getElementById("comercio").value.trim(),
       nota: document.getElementById("nota").value.trim(),
       exportado: false,
@@ -215,22 +225,26 @@ window.addEventListener("DOMContentLoaded", () => {
     document.getElementById("nota").value = "";
     statusEl.textContent = "Guardado.";
     filtroFecha.value = data.fecha;
+    filtroCuenta.value = data.cuenta;
     await refresh();
   });
 
   filtroFecha.addEventListener("change", refresh);
+  filtroCuenta.addEventListener("change", refresh);
 
   document.getElementById("btn-exportar-dia").addEventListener("click", async () => {
     const fecha = filtroFecha.value || todayISO();
-    const rows = cachedRows.filter((r) => r.fecha === fecha);
-    await exportRows(rows, `gastos_${fecha}.csv`, statusEl);
+    const cuenta = filtroCuenta.value;
+    const rows = cachedRows.filter((r) => r.fecha === fecha && r.cuenta === cuenta);
+    await exportRows(rows, `gastos_${slug(cuenta)}_${fecha}.csv`, statusEl);
     await refresh();
   });
 
   document.getElementById("btn-exportar-pendientes").addEventListener("click", async () => {
-    const rows = cachedRows.filter((r) => !r.exportado);
+    const cuenta = filtroCuenta.value;
+    const rows = cachedRows.filter((r) => !r.exportado && r.cuenta === cuenta);
     const stamp = new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-");
-    await exportRows(rows, `gastos_pendientes_${stamp}.csv`, statusEl);
+    await exportRows(rows, `gastos_${slug(cuenta)}_pendientes_${stamp}.csv`, statusEl);
     await refresh();
   });
 

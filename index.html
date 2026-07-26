@@ -57,7 +57,7 @@
     color: var(--muted);
     margin: 0.6rem 0 0.25rem;
   }
-  input[type="text"], input[type="number"], input[type="date"] {
+  input[type="text"], input[type="number"], input[type="date"], select {
     width: 100%;
     padding: 0.6rem 0.7rem;
     border-radius: 8px;
@@ -156,21 +156,28 @@
       <label><input type="radio" name="tipo" value="ingreso" /> Ingreso</label>
     </div>
 
+    <label for="cuenta">Cuenta</label>
+    <select id="cuenta" required>
+      <option value="Banamex Crédito">Banamex Crédito</option>
+      <option value="Banamex Débito">Banamex Débito</option>
+      <option value="Scotia">Scotia</option>
+      <option value="Efectivo (fuera de presupuesto)">Efectivo (fuera de presupuesto)</option>
+    </select>
+
     <label for="categoria">Categoría</label>
-    <input type="text" id="categoria" list="categorias" placeholder="Comida, Super, Transporte…" />
-    <datalist id="categorias">
-      <option value="Comida"></option>
-      <option value="Super"></option>
-      <option value="Transporte"></option>
-      <option value="Gasolina"></option>
-      <option value="Entretenimiento"></option>
-      <option value="Salud"></option>
-      <option value="Hogar"></option>
-      <option value="Servicios"></option>
-      <option value="Ropa"></option>
-      <option value="Educación"></option>
-      <option value="Otro"></option>
-    </datalist>
+    <select id="categoria">
+      <option value="Comida">Comida</option>
+      <option value="Super">Super</option>
+      <option value="Transporte">Transporte</option>
+      <option value="Gasolina">Gasolina</option>
+      <option value="Entretenimiento">Entretenimiento</option>
+      <option value="Salud">Salud</option>
+      <option value="Hogar">Hogar</option>
+      <option value="Servicios">Servicios</option>
+      <option value="Ropa">Ropa</option>
+      <option value="Educación">Educación</option>
+      <option value="Otro">Otro</option>
+    </select>
 
     <label for="comercio">Comercio / Payee</label>
     <input type="text" id="comercio" placeholder="Oxxo, Walmart…" />
@@ -188,6 +195,13 @@
   <div class="card">
     <label for="filtro-fecha">Ver día</label>
     <input type="date" id="filtro-fecha" />
+    <label for="filtro-cuenta">Cuenta</label>
+    <select id="filtro-cuenta">
+      <option value="Banamex Crédito">Banamex Crédito</option>
+      <option value="Banamex Débito">Banamex Débito</option>
+      <option value="Scotia">Scotia</option>
+      <option value="Efectivo (fuera de presupuesto)">Efectivo (fuera de presupuesto)</option>
+    </select>
     <div id="total" style="margin-top:0.75rem"></div>
     <ul id="lista"></ul>
   </div>
