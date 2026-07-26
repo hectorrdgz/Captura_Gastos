@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Captura de Gastos</title>
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#105a4f" />
+<link rel="icon" href="icons/icon-192.png" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<style>
+  :root {
+    --bg: #0f1720;
+    --card: #172230;
+    --border: #29394a;
+    --text: #e8eef4;
+    --muted: #93a3b3;
+    --accent: #1fae94;
+    --accent-dark: #105a4f;
+    --gasto: #e5646b;
+    --ingreso: #4fbf75;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding-bottom: 2rem;
+  }
+  header {
+    background: var(--accent-dark);
+    padding: 1rem 1.25rem;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+  header h1 {
+    font-size: 1.1rem;
+    margin: 0;
+  }
+  main {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  label {
+    display: block;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0.6rem 0 0.25rem;
+  }
+  input[type="text"], input[type="number"], input[type="date"] {
+    width: 100%;
+    padding: 0.6rem 0.7rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: #0d151c;
+    color: var(--text);
+    font-size: 1rem;
+  }
+  .tipo-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.6rem;
+  }
+  .tipo-row label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0;
+    color: var(--text);
+    font-size: 0.95rem;
+  }
+  button {
+    font-size: 1rem;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+  }
+  .btn-primary {
+    width: 100%;
+    padding: 0.8rem;
+    margin-top: 1rem;
+    background: var(--accent);
+    color: #04211c;
+    font-weight: 600;
+  }
+  .export-row {
+    display: flex;
+    gap: 0.6rem;
+  }
+  .btn-secondary {
+    flex: 1;
+    padding: 0.65rem;
+    background: #22333f;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  #status {
+    min-height: 1.2em;
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 0.5rem;
+  }
+  #total {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+  ul#lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    padding: 0.6rem 0;
+  }
+  .row.exportado { opacity: 0.55; }
+  .row-main {
+    display: flex;
+    gap: 0.6rem;
+    align-items: baseline;
+  }
+  .monto { font-weight: 700; }
+  .monto.gasto { color: var(--gasto); }
+  .monto.ingreso { color: var(--ingreso); }
+  .categoria { color: var(--muted); font-size: 0.85rem; }
+  .row-sub { color: var(--muted); font-size: 0.78rem; margin-top: 0.15rem; }
+  .btn-del {
+    background: transparent;
+    color: var(--muted);
+    padding: 0.3rem 0.5rem;
+  }
+</style>
+</head>
+<body>
+<header><h1>Captura de Gastos</h1></header>
+<main>
+  <form id="form-captura" class="card">
+    <label for="monto">Monto</label>
+    <input type="number" id="monto" inputmode="decimal" step="0.01" min="0" placeholder="0.00" required />
+
+    <div class="tipo-row">
+      <label><input type="radio" name="tipo" value="gasto" checked /> Gasto</label>
+      <label><input type="radio" name="tipo" value="ingreso" /> Ingreso</label>
+    </div>
+
+    <label for="categoria">Categoría</label>
+    <input type="text" id="categoria" list="categorias" placeholder="Comida, Super, Transporte…" />
+    <datalist id="categorias">
+      <option value="Comida"></option>
+      <option value="Super"></option>
+      <option value="Transporte"></option>
+      <option value="Gasolina"></option>
+      <option value="Entretenimiento"></option>
+      <option value="Salud"></option>
+      <option value="Hogar"></option>
+      <option value="Servicios"></option>
+      <option value="Ropa"></option>
+      <option value="Educación"></option>
+      <option value="Otro"></option>
+    </datalist>
+
+    <label for="comercio">Comercio / Payee</label>
+    <input type="text" id="comercio" placeholder="Oxxo, Walmart…" />
+
+    <label for="nota">Nota (opcional)</label>
+    <input type="text" id="nota" placeholder="" />
+
+    <label for="fecha">Fecha</label>
+    <input type="date" id="fecha" />
+
+    <button type="submit" class="btn-primary">Guardar</button>
+    <div id="status"></div>
+  </form>
+
+  <div class="card">
+    <label for="filtro-fecha">Ver día</label>
+    <input type="date" id="filtro-fecha" />
+    <div id="total" style="margin-top:0.75rem"></div>
+    <ul id="lista"></ul>
+  </div>
+
+  <div class="card export-row">
+    <button id="btn-exportar-dia" class="btn-secondary">Exportar día</button>
+    <button id="btn-exportar-pendientes" class="btn-secondary">Exportar pendientes</button>
+  </div>
+</main>
+<script src="app.js"></script>
+</body>
+</html>
